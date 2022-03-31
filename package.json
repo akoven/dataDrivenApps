@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start":"per-env",
+    "start": "per-env",
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:development": "nodemon -r dotenv/config ./bin/www",
     "start:production": "node ./bin/www"
@@ -24,11 +24,14 @@
     "express": "^4.17.3",
     "morgan": "^1.10.0",
     "per-env": "^1.0.2",
-    "pug": "^3.0.2"
+    "pg": "^8.7.3",
+    "pug": "^3.0.2",
+    "sequelize": "^5.22.5"
   },
   "devDependencies": {
     "dotenv": "^16.0.0",
     "dotenv-cli": "^5.1.0",
-    "nodemon": "^2.0.15"
+    "nodemon": "^2.0.15",
+    "sequelize-cli": "^5.5.1"
   }
 }
