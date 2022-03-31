@@ -63,6 +63,18 @@ router.get('/book/add', csrfProtection, (req, res) =>{
     });
 });
 
+router.get('/book/edit/:id(\\d+)', csrfProtection,
+    asyncHandler(async (req, res) => {
+        const bookId = parseInt(req.params.id, 10);
+        const book = await db.Book.findByPk(bookId);
+        res.render('book-edit', {
+            title: 'Edit Book',
+            book,
+            csrfToken: req.csrfToken(),
+        });
+    })
+);
+
 router.post('/book/add', csrfProtection, bookValidators, asyncHandler(async(req, res, next) =>{
     const{
         title,
@@ -95,5 +107,42 @@ router.post('/book/add', csrfProtection, bookValidators, asyncHandler(async(req,
         });
     }
 }));
+
+router.post('/book/edit/:id/(\\d+)', csrfProtection, bookValidators,
+    asyncHandler(async (req, res) => {
+        const bookId = parseInt(req.params.id, 10);
+        const bookToUpdate = await db.Book.findByPk(bookId);
+
+        const{
+            title,
+            author,
+            releaseDate,
+            pageCount,
+            publisher
+        } = req.body;
+
+        const book = {
+            title,
+            author,
+            releaseDate,
+            pageCount,
+            publisher,
+        };
+
+        const validationErrors = validationResult(req);
+
+        if(validationErrors.isEmpty()){
+            await bookToUpdate.update(book);
+            res.redirect('/');
+        } else{
+            const errors = validationErrors.array().map(error => error.msg);
+            res.render('book-edit', {
+                title: 'Edit Book',
+                book: { ...book, id: bookId},
+                errors,
+                csrfToken: req.csrfToken(),
+            });
+        }
+    }));
 
 module.exports = router;
