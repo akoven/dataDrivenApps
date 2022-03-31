@@ -2,9 +2,48 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db/models');
 const csrf = require('csurf');
+const { check, validationResult } = require('express-validator');
 
 const csrfProtection = csrf({cookie: true});
 const asyncHandler = (handler) => (req, res, next) => handler(req, res, next).catch(next);
+
+const titleValidator = check('title')
+  .exists({ checkFalsy: true })
+  .withMessage("Please provide a value for Title")
+  .isLength({ max: 255})
+  .withMessage('Title must not be more than 255 characters long');
+
+const authorValidator = check('author')
+    .exists({ checkFalsy: true })
+    .withMessage('Please provide a value for Author')
+    .isLength({ max: 100 })
+    .withMessage('Author must not be more than 100 characters long');
+
+const releaseDateValidator =   check('releaseDate')
+    .exists({ checkFalsy: true })
+    .withMessage('Please provide a value for Release Date')
+    .isISO8601()
+    .withMessage('Please provide a valid date for Release Date');
+
+const pageCountValidator =   check('pageCount')
+    .exists({ checkFalsy: true })
+    .withMessage('Please provide a value for Page Count')
+    .isInt({ min: 0 })
+    .withMessage('Please provide a valid integer for Page Count');
+
+const publisherValidator =   check('publisher')
+    .exists({ checkFalsy: true })
+    .withMessage('Please provide a value for Publisher')
+    .isLength({ max: 100 })
+    .withMessage('Publisher must not be more than 100 characters long');
+
+const bookValidators = [
+    titleValidator,
+    authorValidator,
+    pageCountValidator,
+    releaseDateValidator,
+    publisherValidator,
+];
 
 router.get('/', asyncHandler(async (req, res) => {
         const books = await db.Book.findAll({order: [['title', 'ASC']]});
@@ -16,6 +55,7 @@ router.get('/', asyncHandler(async (req, res) => {
 
 router.get('/book/add', csrfProtection, (req, res) =>{
     const book = db.Book.build();
+    console.log(book);
     res.render('book-add', {
         title: 'Add Book',
         book,
@@ -23,7 +63,7 @@ router.get('/book/add', csrfProtection, (req, res) =>{
     });
 });
 
-router.post('/book/add', csrfProtection, asyncHandler(async(req, res) =>{
+router.post('/book/add', csrfProtection, bookValidators, asyncHandler(async(req, res, next) =>{
     const{
         title,
         author,
@@ -39,14 +79,18 @@ router.post('/book/add', csrfProtection, asyncHandler(async(req, res) =>{
         pageCount,
         publisher,
     });
-    try{
+
+    const validatorErrors = validationResult(req);
+
+    if (validatorErrors.isEmpty()) {
         await book.save();
         res.redirect('/');
-    }catch(error){
+    } else {
+        const errors = validatorErrors.array().map(error => error.msg);
         res.render('book-add', {
             title: 'Add Book',
             book,
-            error,
+            errors,
             csrfToken: req.csrfToken(),
         });
     }
