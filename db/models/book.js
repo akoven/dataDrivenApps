@@ -7,26 +7,26 @@ module.exports = (sequelize, DataTypes) => {
     // pageCount: DataTypes.INTEGER,
     // publisher: DataTypes.STRING
     title: {
-      type: Sequelize.STRING,
+      type: DataTypes.STRING,
       allowNull: false
     },
     author: {
-      type: Sequelize.STRING(100),
+      type: DataTypes.STRING(100),
       allowNull: false
 
     },
     releaseDate: {
-      type: Sequelize.DATEONLY,
+      type: DataTypes.DATEONLY,
       allowNull: false
 
     },
     pageCount: {
-      type: Sequelize.INTEGER,
+      type: DataTypes.INTEGER,
       allowNull: false
 
     },
     publisher: {
-      type: Sequelize.STRING(100),
+      type: DataTypes.STRING(100),
       allowNull: false
 
     },
